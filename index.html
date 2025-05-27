@@ -174,7 +174,7 @@
             <li>Current employees: Maximum 25% of total units</li>
             <li>Ex-employees: Maximum 12.5% of total units</li>
         </ul>
-        <p>The calculator will automatically apply the most restrictive limit.</p>
+        <p>The calculator will automatically apply the maximum allowed percentage based on your employment status.</p>
     </div>
 
     <div class="container">
@@ -185,7 +185,7 @@
             </div>
             <form id="esopForm">
                 <div class="form-group">
-                    <label for="units">Number of ESOP Units:</label>
+                    <label for="units">Number of Vested ESOP Units:</label>
                     <input type="number" id="units" min="1" required>
                 </div>
 
@@ -201,11 +201,6 @@
                             <label for="exEmployee">Ex-Employee (12.5% limit)</label>
                         </div>
                     </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="percentSellable">Desired Percentage of Units to Sell (1-100):</label>
-                    <input type="number" id="percentSellable" min="0" max="100" value="100" step="0.1" required>
                 </div>
 
                 <div class="form-group">
@@ -650,45 +645,144 @@
         document.getElementById('esopForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Get form values
+            // Get input values
             const units = parseInt(document.getElementById('units').value);
-            const isCurrentEmployee = document.getElementById('currentEmployee').checked;
-            const percentSellable = parseFloat(document.getElementById('percentSellable').value);
+            const employmentStatus = document.querySelector('input[name="employmentStatus"]:checked').value;
             const exercisePrice = parseFloat(document.getElementById('exercisePrice').value);
             const buybackPrice = parseFloat(document.getElementById('buybackPrice').value);
             const fairMarketValue = parseFloat(document.getElementById('fairMarketValue').value);
             const usdToInrRate = parseFloat(document.getElementById('usdToInrRate').value);
-            const isLongTerm = document.getElementById('longTerm').checked;
+            const holdingPeriod = document.querySelector('input[name="holdingPeriod"]:checked').value;
             
-            // Calculate scenarios
-            const exercisedAlreadyScenario = calculateBenefitsWhenExercisedAlready(
-                units, 
-                exercisePrice, 
-                fairMarketValue, 
-                buybackPrice, 
-                isLongTerm,
-                percentSellable,
-                isCurrentEmployee,
-                usdToInrRate
-            );
+            // Calculate maximum percentage based on employment status
+            const maxPercentage = employmentStatus === 'current' ? 25 : 12.5;
             
-            const notExercisedYetScenario = calculateBenefitsWhenNotExercisedYet(
-                units, 
-                exercisePrice, 
-                buybackPrice,
-                percentSellable,
-                isCurrentEmployee,
-                usdToInrRate
-            );
+            // Calculate eligible units based on percentage cap
+            const eligibleUnits = Math.min(units * (maxPercentage / 100), units);
             
-            // Compare scenarios
-            const comparison = compareScenarios(exercisedAlreadyScenario, notExercisedYetScenario);
+            // Calculate values
+            const totalExercisePrice = exercisePrice * eligibleUnits;
+            const totalBuybackPrice = buybackPrice * eligibleUnits;
+            const totalFairMarketValue = fairMarketValue * eligibleUnits;
             
-            // Display results
-            displayResults(exercisedAlreadyScenario, notExercisedYetScenario, comparison);
+            // Calculate perquisite tax
+            const perquisiteTaxIncome = Math.max(0, (fairMarketValue - exercisePrice) * eligibleUnits);
+            const perquisiteTax = perquisiteTaxIncome * 0.3; // 30% perquisite tax
+            const perquisiteTaxCess = perquisiteTax * 0.04; // 4% cess
+            const totalPerquisiteTax = perquisiteTax + perquisiteTaxCess;
             
-            // Scroll to results
-            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+            // Calculate capital gains
+            const capitalGains = (buybackPrice - fairMarketValue) * eligibleUnits;
+            let capitalGainsTaxRate = 0.3; // Default to short-term rate (30%)
+            
+            if (holdingPeriod === 'long') {
+                capitalGainsTaxRate = 0.2; // Long-term capital gains tax (20%)
+            }
+            
+            const capitalGainsTax = Math.max(0, capitalGains * capitalGainsTaxRate);
+            const capitalGainsTaxCess = capitalGainsTax * 0.04; // 4% cess
+            const totalCapitalGainsTax = capitalGainsTax + capitalGainsTaxCess;
+            
+            // Calculate net proceeds
+            const grossProceeds = totalBuybackPrice;
+            const totalTaxes = totalPerquisiteTax + totalCapitalGainsTax;
+            const netProceeds = grossProceeds - totalTaxes;
+            
+            // Convert to INR
+            const grossProceedsINR = grossProceeds * usdToInrRate;
+            const totalTaxesINR = totalTaxes * usdToInrRate;
+            const netProceedsINR = netProceeds * usdToInrRate;
+            
+            // Cap check - 1 crore INR limit
+            const croreCapINR = 10000000; // 1 crore in INR
+            const isCapped = netProceedsINR > croreCapINR;
+            const finalNetProceedsINR = isCapped ? croreCapINR : netProceedsINR;
+            
+            // Format currency
+            const formatUSD = (amount) => {
+                return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+            };
+            
+            const formatINR = (amount) => {
+                return new Intl.NumberFormat('en-IN', { 
+                    style: 'currency', 
+                    currency: 'INR',
+                    maximumFractionDigits: 0 
+                }).format(amount);
+            };
+            
+            // Generate results
+            const resultsHTML = `
+                <h2>Your ESOP Benefits</h2>
+                <div class="results-card">
+                    <h3>Summary</h3>
+                    <div class="summary-row">
+                        <span>Total ESOP Units:</span>
+                        <span>${units.toLocaleString()}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Maximum Percentage Allowed:</span>
+                        <span>${maxPercentage.toFixed(1)}%</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Eligible Units for Sale:</span>
+                        <span>${Math.floor(eligibleUnits).toLocaleString()}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Gross Proceeds:</span>
+                        <span>${formatUSD(grossProceeds)} / ${formatINR(grossProceedsINR)}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Total Tax:</span>
+                        <span>${formatUSD(totalTaxes)} / ${formatINR(totalTaxesINR)}</span>
+                    </div>
+                    <div class="summary-row highlight">
+                        <span>Net Proceeds${isCapped ? ' (Capped at ₹1 Crore)' : ''}:</span>
+                        <span>${formatUSD(isCapped ? finalNetProceedsINR/usdToInrRate : netProceeds)} / ${formatINR(finalNetProceedsINR)}</span>
+                    </div>
+                </div>
+                
+                <div class="results-card">
+                    <h3>Tax Breakdown</h3>
+                    <h4>Perquisite Tax (At time of exercise)</h4>
+                    <div class="tax-row">
+                        <span>Perquisite Value:</span>
+                        <span>${formatUSD(perquisiteTaxIncome)} / ${formatINR(perquisiteTaxIncome * usdToInrRate)}</span>
+                    </div>
+                    <div class="tax-row">
+                        <span>Perquisite Tax (30%):</span>
+                        <span>${formatUSD(perquisiteTax)} / ${formatINR(perquisiteTax * usdToInrRate)}</span>
+                    </div>
+                    <div class="tax-row">
+                        <span>Education Cess (4%):</span>
+                        <span>${formatUSD(perquisiteTaxCess)} / ${formatINR(perquisiteTaxCess * usdToInrRate)}</span>
+                    </div>
+                    <div class="tax-row highlight">
+                        <span>Total Perquisite Tax:</span>
+                        <span>${formatUSD(totalPerquisiteTax)} / ${formatINR(totalPerquisiteTax * usdToInrRate)}</span>
+                    </div>
+                    
+                    <h4>Capital Gains Tax (At time of buyback)</h4>
+                    <div class="tax-row">
+                        <span>Capital Gains:</span>
+                        <span>${formatUSD(capitalGains)} / ${formatINR(capitalGains * usdToInrRate)}</span>
+                    </div>
+                    <div class="tax-row">
+                        <span>Capital Gains Tax (${holdingPeriod === 'long' ? '20%' : '30%'}):</span>
+                        <span>${formatUSD(capitalGainsTax)} / ${formatINR(capitalGainsTax * usdToInrRate)}</span>
+                    </div>
+                    <div class="tax-row">
+                        <span>Education Cess (4%):</span>
+                        <span>${formatUSD(capitalGainsTaxCess)} / ${formatINR(capitalGainsTaxCess * usdToInrRate)}</span>
+                    </div>
+                    <div class="tax-row highlight">
+                        <span>Total Capital Gains Tax:</span>
+                        <span>${formatUSD(totalCapitalGainsTax)} / ${formatINR(totalCapitalGainsTax * usdToInrRate)}</span>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('results').innerHTML = resultsHTML;
         });
     </script>
 </body>

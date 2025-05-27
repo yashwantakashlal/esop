@@ -33,104 +33,156 @@ const formatUSD = (amount) => {
   }).format(amount);
 };
 
-// Display result in a formatted manner
+// Format percentage
+const formatPercent = (percent) => {
+  return `${percent.toFixed(2)}%`;
+};
+
+// Display result in a formatted manner with improved visuals
 function displayResults(results, scenarioType) {
-  console.log('\n' + '='.repeat(80));
-  console.log(`${scenarioType} SCENARIO RESULTS`);
-  console.log('='.repeat(80));
+  console.log('\n' + '╔' + '═'.repeat(78) + '╗');
+  console.log('║' + ' '.repeat(25) + `${scenarioType} SCENARIO RESULTS` + ' '.repeat(25) + '║');
+  console.log('╠' + '═'.repeat(78) + '╣');
+  
+  const printRow = (label, value) => {
+    console.log('║ ' + label.padEnd(40) + ' │ ' + value.padStart(35) + ' ║');
+  };
+  
+  const printSection = (title) => {
+    console.log('╟' + '─'.repeat(40) + '┬' + '─'.repeat(37) + '╢');
+    console.log('║ ' + title.padEnd(40) + ' │' + ' '.repeat(36) + '║');
+    console.log('╟' + '─'.repeat(40) + '┼' + '─'.repeat(37) + '╢');
+  };
   
   if (scenarioType === 'EXERCISED ALREADY') {
     const r = results;
-    console.log(`\nUnits: ${r.units}`);
-    console.log(`Employment Status: ${r.isCurrentEmployee ? 'Current Employee' : 'Ex-Employee'}`);
-    console.log(`Requested Percentage Sellable: ${r.percentSellable.toFixed(2)}%`);
-    console.log(`Actual Percentage Sellable: ${r.actualPercentageSold.toFixed(2)}%`);
-    console.log(`Sellable Units: ${r.sellableUnits} of ${r.units} (${r.nonSellableUnits} non-sellable)`);
-    console.log(`Limiting Factor: ${r.limitingFactor}`);
-    console.log(`Exercise Price: ${formatUSD(r.exercisePriceUsd)} (${formatCurrency(r.exercisePrice)}) per unit`);
-    console.log(`Fair Market Value at Exercise: ${formatUSD(r.fairMarketValueUsd)} (${formatCurrency(r.fairMarketValue)}) per unit`);
-    console.log(`Buyback Price: ${formatUSD(r.buybackPriceUsd)} (${formatCurrency(r.buybackPrice)}) per unit`);
-    console.log(`USD to INR Rate: ${r.usdToInrRate}`);
-    console.log(`Capital Gains Tax Type: ${r.isLongTerm ? 'Long Term (>24 months)' : 'Short Term (<24 months)'}`);
     
-    console.log('\nCOSTS:');
-    console.log(`Exercise Cost: ${formatCurrency(r.exerciseCost)}`);
-    console.log(`Perquisite Value: ${formatCurrency(r.perquisiteValue)}`);
-    console.log(`Perquisite Tax: ${formatCurrency(r.perquisiteTax)}`);
-    console.log(`Total Acquisition Cost: ${formatCurrency(r.totalAcquisitionCost)}`);
+    printSection('BASIC INFORMATION');
+    printRow('Vested ESOPs', `${r.units.toLocaleString()}`);
+    printRow('Employment Status', r.isCurrentEmployee ? 'Current Employee' : 'Ex-Employee');
+    printRow('Maximum Percentage Allowed', formatPercent(r.isCurrentEmployee ? SELLING_CAPS.CURRENT_EMPLOYEE_PERCENT : SELLING_CAPS.EX_EMPLOYEE_PERCENT));
+    printRow('Actual Percentage Sellable', formatPercent(r.actualPercentageSold));
+    printRow('Sellable Units', `${r.sellableUnits.toLocaleString()} of ${r.units.toLocaleString()}`);
+    printRow('Non-sellable Units', `${r.nonSellableUnits.toLocaleString()}`);
+    printRow('Limiting Factor', `${r.limitingFactor}`);
     
-    console.log('\nRETURNS (for sellable units):');
-    console.log(`Buyback Amount: ${formatCurrency(r.buybackAmount)}`);
-    console.log(`Capital Gains: ${formatCurrency(r.capitalGains)}`);
-    console.log(`Capital Gains Tax: ${formatCurrency(r.capitalGainsTax)}`);
-    console.log(`Net Proceeds: ${formatCurrency(r.netProceeds)}`);
+    printSection('PRICING INFORMATION');
+    printRow('Exercise Price per Unit', `${formatUSD(r.exercisePriceUsd)} (${formatCurrency(r.exercisePrice)})`);
+    printRow('Fair Market Value at Exercise', `${formatUSD(r.fairMarketValueUsd)} (${formatCurrency(r.fairMarketValue)})`);
+    printRow('Buyback Price per Unit', `${formatUSD(r.buybackPriceUsd)} (${formatCurrency(r.buybackPrice)})`);
+    printRow('USD to INR Rate', `${r.usdToInrRate}`);
+    printRow('Capital Gains Tax Type', r.isLongTerm ? 'Long Term (>24 months)' : 'Short Term (<24 months)');
     
-    console.log('\nSUMMARY:');
-    console.log(`Total Profit (for sellable units): ${formatCurrency(r.totalProfit)}`);
-    console.log(`Total Tax Paid: ${formatCurrency(r.taxPaid)}`);
-    console.log(`Tax Rate: ${((r.taxPaid / r.buybackAmount) * 100).toFixed(2)}%`);
-    console.log(`Estimated Value of Non-Sellable Units: ${formatCurrency(r.remainingValue)}`);
+    printSection('COSTS');
+    printRow('Exercise Cost', formatCurrency(r.exerciseCost));
+    printRow('Perquisite Value', formatCurrency(r.perquisiteValue));
+    printRow('Perquisite Tax', formatCurrency(r.perquisiteTax));
+    printRow('Total Acquisition Cost', formatCurrency(r.totalAcquisitionCost));
+    
+    printSection('RETURNS (FOR SELLABLE UNITS)');
+    printRow('Buyback Amount', formatCurrency(r.buybackAmount));
+    printRow('Capital Gains', formatCurrency(r.capitalGains));
+    printRow('Capital Gains Tax', formatCurrency(r.capitalGainsTax));
+    printRow('Net Proceeds', formatCurrency(r.netProceeds));
+    
+    printSection('SUMMARY');
+    printRow('Total Profit (for sellable units)', formatCurrency(r.totalProfit));
+    printRow('Total Tax Paid', formatCurrency(r.taxPaid));
+    printRow('Effective Tax Rate', formatPercent((r.taxPaid / r.buybackAmount) * 100));
+    printRow('Estimated Value of Non-Sellable Units', formatCurrency(r.remainingValue));
   } else {
     const r = results;
-    console.log(`\nUnits: ${r.units}`);
-    console.log(`Employment Status: ${r.isCurrentEmployee ? 'Current Employee' : 'Ex-Employee'}`);
-    console.log(`Requested Percentage Sellable: ${r.percentSellable.toFixed(2)}%`);
-    console.log(`Actual Percentage Sellable: ${r.actualPercentageSold.toFixed(2)}%`);
-    console.log(`Sellable Units: ${r.sellableUnits} of ${r.units} (${r.nonSellableUnits} non-sellable)`);
-    console.log(`Limiting Factor: ${r.limitingFactor}`);
-    console.log(`Exercise Price (not paid): ${formatUSD(r.exercisePriceUsd)} (${formatCurrency(r.exercisePrice)}) per unit`);
-    console.log(`Buyback Price: ${formatUSD(r.buybackPriceUsd)} (${formatCurrency(r.buybackPrice)}) per unit`);
-    console.log(`USD to INR Rate: ${r.usdToInrRate}`);
     
-    console.log('\nFINANCIALS (for sellable units):');
-    console.log(`Notional Exercise Cost (saved): ${formatCurrency(r.notionalExerciseCost)}`);
-    console.log(`Buyback Amount: ${formatCurrency(r.buybackAmount)}`);
-    console.log(`Perquisite Value: ${formatCurrency(r.perquisiteValue)}`);
-    console.log(`Perquisite Tax: ${formatCurrency(r.perquisiteTax)}`);
-    console.log(`Net Proceeds: ${formatCurrency(r.netProceeds)}`);
+    printSection('BASIC INFORMATION');
+    printRow('Vested ESOPs', `${r.units.toLocaleString()}`);
+    printRow('Employment Status', r.isCurrentEmployee ? 'Current Employee' : 'Ex-Employee');
+    printRow('Maximum Percentage Allowed', formatPercent(r.isCurrentEmployee ? SELLING_CAPS.CURRENT_EMPLOYEE_PERCENT : SELLING_CAPS.EX_EMPLOYEE_PERCENT));
+    printRow('Actual Percentage Sellable', formatPercent(r.actualPercentageSold));
+    printRow('Sellable Units', `${r.sellableUnits.toLocaleString()} of ${r.units.toLocaleString()}`);
+    printRow('Non-sellable Units', `${r.nonSellableUnits.toLocaleString()}`);
+    printRow('Limiting Factor', `${r.limitingFactor}`);
     
-    console.log('\nSUMMARY:');
-    console.log(`Net Profit (for sellable units): ${formatCurrency(r.netProfit)}`);
-    console.log(`Total Tax Paid: ${formatCurrency(r.taxPaid)}`);
-    console.log(`Tax Rate: ${((r.taxPaid / r.buybackAmount) * 100).toFixed(2)}%`);
-    console.log(`Estimated Value of Non-Sellable Units: ${formatCurrency(r.nonSellableValue)}`);
+    printSection('PRICING INFORMATION');
+    printRow('Exercise Price (not paid)', `${formatUSD(r.exercisePriceUsd)} (${formatCurrency(r.exercisePrice)})`);
+    printRow('Buyback Price per Unit', `${formatUSD(r.buybackPriceUsd)} (${formatCurrency(r.buybackPrice)})`);
+    printRow('USD to INR Rate', `${r.usdToInrRate}`);
+    
+    printSection('FINANCIALS (FOR SELLABLE UNITS)');
+    printRow('Notional Exercise Cost (saved)', formatCurrency(r.notionalExerciseCost));
+    printRow('Buyback Amount', formatCurrency(r.buybackAmount));
+    printRow('Perquisite Value', formatCurrency(r.perquisiteValue));
+    printRow('Perquisite Tax', formatCurrency(r.perquisiteTax));
+    printRow('Net Proceeds', formatCurrency(r.netProceeds));
+    
+    printSection('SUMMARY');
+    printRow('Net Profit (for sellable units)', formatCurrency(r.netProfit));
+    printRow('Total Tax Paid', formatCurrency(r.taxPaid));
+    printRow('Effective Tax Rate', formatPercent((r.taxPaid / r.buybackAmount) * 100));
+    printRow('Estimated Value of Non-Sellable Units', formatCurrency(r.nonSellableValue));
   }
+  
+  console.log('╚' + '═'.repeat(78) + '╝');
 }
 
-// Display comparison between the two scenarios
+// Display comparison between the two scenarios with improved visuals
 function displayComparison(comparison) {
-  console.log('\n' + '='.repeat(80));
-  console.log('COMPARISON BETWEEN SCENARIOS');
-  console.log('='.repeat(80));
+  console.log('\n' + '╔' + '═'.repeat(78) + '╗');
+  console.log('║' + ' '.repeat(22) + 'COMPARISON BETWEEN SCENARIOS' + ' '.repeat(22) + '║');
+  console.log('╠' + '═'.repeat(78) + '╣');
   
-  console.log(`\nProfit in "Exercised Already" Scenario: ${formatCurrency(comparison.exercisedAlreadyScenario.totalProfit)}`);
-  console.log(`Profit in "Not Exercised Yet" Scenario: ${formatCurrency(comparison.notExercisedYetScenario.netProfit)}`);
-  console.log(`Profit Difference: ${formatCurrency(comparison.profitDifference)}`);
+  const printRow = (label, value) => {
+    console.log('║ ' + label.padEnd(40) + ' │ ' + value.padStart(35) + ' ║');
+  };
   
-  console.log(`\nTax Paid in "Exercised Already" Scenario: ${formatCurrency(comparison.exercisedAlreadyScenario.taxPaid)}`);
-  console.log(`Tax Paid in "Not Exercised Yet" Scenario: ${formatCurrency(comparison.notExercisedYetScenario.taxPaid)}`);
-  console.log(`Tax Difference: ${formatCurrency(comparison.taxDifference)}`);
+  const printSection = (title) => {
+    console.log('╟' + '─'.repeat(40) + '┬' + '─'.repeat(37) + '╢');
+    console.log('║ ' + title.padEnd(40) + ' │' + ' '.repeat(36) + '║');
+    console.log('╟' + '─'.repeat(40) + '┼' + '─'.repeat(37) + '╢');
+  };
   
-  console.log(`\nRECOMMENDATION: ${comparison.recommendation}`);
+  printSection('PROFIT COMPARISON');
+  printRow('Profit in "Exercised Already" Scenario', formatCurrency(comparison.exercisedAlreadyScenario.totalProfit));
+  printRow('Profit in "Not Exercised Yet" Scenario', formatCurrency(comparison.notExercisedYetScenario.netProfit));
+  printRow('Profit Difference', formatCurrency(comparison.profitDifference));
+  
+  printSection('TAX COMPARISON');
+  printRow('Tax Paid in "Exercised Already" Scenario', formatCurrency(comparison.exercisedAlreadyScenario.taxPaid));
+  printRow('Tax Paid in "Not Exercised Yet" Scenario', formatCurrency(comparison.notExercisedYetScenario.taxPaid));
+  printRow('Tax Difference', formatCurrency(comparison.taxDifference));
+  
+  printSection('RECOMMENDATION');
+  const recommendation = comparison.recommendation;
+  const wrappedRecommendation = recommendation.length > 35 ? 
+    recommendation.substring(0, 35) + '\n║' + ' '.repeat(41) + '│ ' + recommendation.substring(35).padStart(35) + ' ║' : 
+    recommendation;
+  printRow('Recommendation', wrappedRecommendation);
+  
+  console.log('╚' + '═'.repeat(78) + '╝');
 }
 
-// Display selling caps information
+// Display selling caps information with improved visuals
 function displaySellingCaps() {
-  console.log('\n' + '-'.repeat(80));
-  console.log('SELLING CAPS INFORMATION');
-  console.log('-'.repeat(80));
-  console.log(`Maximum selling amount: ${formatCurrency(SELLING_CAPS.MAX_AMOUNT_INR)} (1 crore INR)`);
-  console.log(`Current employee cap: ${SELLING_CAPS.CURRENT_EMPLOYEE_PERCENT}% of total units`);
-  console.log(`Ex-employee cap: ${SELLING_CAPS.EX_EMPLOYEE_PERCENT}% of total units`);
-  console.log('-'.repeat(80));
+  console.log('\n' + '╔' + '═'.repeat(78) + '╗');
+  console.log('║' + ' '.repeat(25) + 'SELLING CAPS INFORMATION' + ' '.repeat(25) + '║');
+  console.log('╠' + '═'.repeat(78) + '╣');
+  
+  const printRow = (label, value) => {
+    console.log('║ ' + label.padEnd(40) + ' │ ' + value.padStart(35) + ' ║');
+  };
+  
+  printRow('Maximum Selling Amount', `${formatCurrency(SELLING_CAPS.MAX_AMOUNT_INR)} (1 crore INR)`);
+  printRow('Current Employee Cap', `${SELLING_CAPS.CURRENT_EMPLOYEE_PERCENT}% of total units`);
+  printRow('Ex-employee Cap', `${SELLING_CAPS.EX_EMPLOYEE_PERCENT}% of total units`);
+  
+  console.log('╚' + '═'.repeat(78) + '╝');
 }
 
 // Main function to start the calculator
 async function startCalculator() {
-  console.log('\n' + '*'.repeat(80));
-  console.log('ESOP BUYBACK BENEFIT CALCULATOR (INDIAN TAX REGULATIONS)');
-  console.log('All prices are entered in USD and results are shown in INR');
-  console.log('*'.repeat(80));
+  console.log('\n' + '╔' + '═'.repeat(78) + '╗');
+  console.log('║' + ' '.repeat(15) + 'ESOP BUYBACK BENEFIT CALCULATOR (INDIA)' + ' '.repeat(16) + '║');
+  console.log('║' + ' '.repeat(10) + 'All prices are entered in USD and results are shown in INR' + ' '.repeat(11) + '║');
+  console.log('╚' + '═'.repeat(78) + '╝');
   
   // Display selling caps information
   displaySellingCaps();
@@ -146,14 +198,15 @@ async function startCalculator() {
   
   try {
     // Get common inputs
-    const units = parseInt(await getUserInput('\nEnter number of ESOP units: '));
-    if (isNaN(units) || units <= 0) throw new Error('Invalid number of units');
+    const units = parseInt(await getUserInput('\nEnter number of vested ESOPs: '));
+    if (isNaN(units) || units <= 0) throw new Error('Invalid number of vested ESOPs');
     
     const employmentStatus = await getUserInput('Are you a current employee? (y/n): ');
     const isCurrentEmployee = employmentStatus.toLowerCase() === 'y' || employmentStatus.toLowerCase() === 'yes';
     
-    const percentSellable = parseFloat(await getUserInput(`Enter desired percentage of units to sell (1-100) [Current limit: ${isCurrentEmployee ? '25%' : '12.5%'}]: `));
-    if (isNaN(percentSellable) || percentSellable < 0 || percentSellable > 100) throw new Error('Invalid percentage');
+    // Use maximum allowed percentage based on employment status
+    const percentSellable = isCurrentEmployee ? SELLING_CAPS.CURRENT_EMPLOYEE_PERCENT : SELLING_CAPS.EX_EMPLOYEE_PERCENT;
+    console.log(`Maximum allowed selling percentage: ${formatPercent(percentSellable)} (automatically applied)`);
     
     const exercisePrice = parseFloat(await getUserInput('Enter exercise price per unit (USD): '));
     if (isNaN(exercisePrice) || exercisePrice < 0) throw new Error('Invalid exercise price');
@@ -168,7 +221,7 @@ async function startCalculator() {
     // Calculate maximum sellable value
     const maxSellableValueInr = SELLING_CAPS.MAX_AMOUNT_INR;
     const maxSellableValueUsd = maxSellableValueInr / usdToInrRate;
-    console.log(`\nBased on your inputs, maximum sellable value is ${formatCurrency(maxSellableValueInr)} (${formatUSD(maxSellableValueUsd)})`);
+    console.log(`\nMaximum sellable value is ${formatCurrency(maxSellableValueInr)} (${formatUSD(maxSellableValueUsd)})`);
     
     // Calculate scenario when not exercised yet
     const notExercisedYetScenario = calculateBenefitsWhenNotExercisedYet(
