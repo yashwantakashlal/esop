@@ -6,7 +6,7 @@ const {
   calculateBenefitsWhenNotExercisedYet, 
   compareScenarios,
   DEFAULT_USD_TO_INR_RATE,
-  SELLING_CAPS
+  DEFAULT_SELLING_CAPS
 } = require('./esopCalculator');
 
 // Create readline interface for user input
@@ -59,8 +59,7 @@ function displayResults(results, scenarioType) {
     
     printSection('BASIC INFORMATION');
     printRow('Vested ESOPs', `${r.units.toLocaleString()}`);
-    printRow('Employment Status', r.isCurrentEmployee ? 'Current Employee' : 'Ex-Employee');
-    printRow('Maximum Percentage Allowed', formatPercent(r.isCurrentEmployee ? SELLING_CAPS.CURRENT_EMPLOYEE_PERCENT : SELLING_CAPS.EX_EMPLOYEE_PERCENT));
+    printRow('User-defined Percentage', formatPercent(r.percentSellable));
     printRow('Actual Percentage Sellable', formatPercent(r.actualPercentageSold));
     printRow('Sellable Units', `${r.sellableUnits.toLocaleString()} of ${r.units.toLocaleString()}`);
     printRow('Non-sellable Units', `${r.nonSellableUnits.toLocaleString()}`);
@@ -71,6 +70,7 @@ function displayResults(results, scenarioType) {
     printRow('Fair Market Value at Exercise', `${formatUSD(r.fairMarketValueUsd)} (${formatCurrency(r.fairMarketValue)})`);
     printRow('Buyback Price per Unit', `${formatUSD(r.buybackPriceUsd)} (${formatCurrency(r.buybackPrice)})`);
     printRow('USD to INR Rate', `${r.usdToInrRate}`);
+    printRow('Maximum INR Cap', `${formatCurrency(r.maxAmountInr)}`);
     printRow('Capital Gains Tax Type', r.isLongTerm ? 'Long Term (>24 months)' : 'Short Term (<24 months)');
     
     printSection('COSTS');
@@ -95,8 +95,7 @@ function displayResults(results, scenarioType) {
     
     printSection('BASIC INFORMATION');
     printRow('Vested ESOPs', `${r.units.toLocaleString()}`);
-    printRow('Employment Status', r.isCurrentEmployee ? 'Current Employee' : 'Ex-Employee');
-    printRow('Maximum Percentage Allowed', formatPercent(r.isCurrentEmployee ? SELLING_CAPS.CURRENT_EMPLOYEE_PERCENT : SELLING_CAPS.EX_EMPLOYEE_PERCENT));
+    printRow('User-defined Percentage', formatPercent(r.percentSellable));
     printRow('Actual Percentage Sellable', formatPercent(r.actualPercentageSold));
     printRow('Sellable Units', `${r.sellableUnits.toLocaleString()} of ${r.units.toLocaleString()}`);
     printRow('Non-sellable Units', `${r.nonSellableUnits.toLocaleString()}`);
@@ -106,6 +105,7 @@ function displayResults(results, scenarioType) {
     printRow('Exercise Price (not paid)', `${formatUSD(r.exercisePriceUsd)} (${formatCurrency(r.exercisePrice)})`);
     printRow('Buyback Price per Unit', `${formatUSD(r.buybackPriceUsd)} (${formatCurrency(r.buybackPrice)})`);
     printRow('USD to INR Rate', `${r.usdToInrRate}`);
+    printRow('Maximum INR Cap', `${formatCurrency(r.maxAmountInr)}`);
     
     printSection('FINANCIALS (FOR SELLABLE UNITS)');
     printRow('Notional Exercise Cost (saved)', formatCurrency(r.notionalExerciseCost));
@@ -161,18 +161,17 @@ function displayComparison(comparison) {
 }
 
 // Display selling caps information with improved visuals
-function displaySellingCaps() {
+function displayDefaultSettings() {
   console.log('\n' + '╔' + '═'.repeat(78) + '╗');
-  console.log('║' + ' '.repeat(25) + 'SELLING CAPS INFORMATION' + ' '.repeat(25) + '║');
+  console.log('║' + ' '.repeat(25) + 'DEFAULT SETTINGS' + ' '.repeat(25) + '║');
   console.log('╠' + '═'.repeat(78) + '╣');
   
   const printRow = (label, value) => {
     console.log('║ ' + label.padEnd(40) + ' │ ' + value.padStart(35) + ' ║');
   };
   
-  printRow('Maximum Selling Amount', `${formatCurrency(SELLING_CAPS.MAX_AMOUNT_INR)} (1 crore INR)`);
-  printRow('Current Employee Cap', `${SELLING_CAPS.CURRENT_EMPLOYEE_PERCENT}% of total units`);
-  printRow('Ex-employee Cap', `${SELLING_CAPS.EX_EMPLOYEE_PERCENT}% of total units`);
+  printRow('Default Maximum Selling Amount', `${formatCurrency(DEFAULT_SELLING_CAPS.MAX_AMOUNT_INR)} (1 crore INR)`);
+  printRow('Default Percentage', `${DEFAULT_SELLING_CAPS.DEFAULT_PERCENT}% of total units`);
   
   console.log('╚' + '═'.repeat(78) + '╝');
 }
@@ -184,8 +183,8 @@ async function startCalculator() {
   console.log('║' + ' '.repeat(10) + 'All prices are entered in USD and results are shown in INR' + ' '.repeat(11) + '║');
   console.log('╚' + '═'.repeat(78) + '╝');
   
-  // Display selling caps information
-  displaySellingCaps();
+  // Display default settings information
+  displayDefaultSettings();
   
   // Helper function to get user input
   const getUserInput = (question) => {
@@ -201,12 +200,13 @@ async function startCalculator() {
     const units = parseInt(await getUserInput('\nEnter number of vested ESOPs: '));
     if (isNaN(units) || units <= 0) throw new Error('Invalid number of vested ESOPs');
     
-    const employmentStatus = await getUserInput('Are you a current employee? (y/n): ');
-    const isCurrentEmployee = employmentStatus.toLowerCase() === 'y' || employmentStatus.toLowerCase() === 'yes';
+    const percentInput = await getUserInput(`Enter percentage of units allowed to sell [default: ${DEFAULT_SELLING_CAPS.DEFAULT_PERCENT}%]: `);
+    const percentSellable = percentInput ? parseFloat(percentInput) : DEFAULT_SELLING_CAPS.DEFAULT_PERCENT;
+    if (isNaN(percentSellable) || percentSellable <= 0 || percentSellable > 100) throw new Error('Invalid percentage: must be between 0 and 100');
     
-    // Use maximum allowed percentage based on employment status
-    const percentSellable = isCurrentEmployee ? SELLING_CAPS.CURRENT_EMPLOYEE_PERCENT : SELLING_CAPS.EX_EMPLOYEE_PERCENT;
-    console.log(`Maximum allowed selling percentage: ${formatPercent(percentSellable)} (automatically applied)`);
+    const maxCapInput = await getUserInput(`Enter maximum INR cap in crores [default: ${DEFAULT_SELLING_CAPS.MAX_AMOUNT_INR / 10000000} crore]: `);
+    const maxAmountInr = maxCapInput ? parseFloat(maxCapInput) * 10000000 : DEFAULT_SELLING_CAPS.MAX_AMOUNT_INR;
+    if (isNaN(maxAmountInr) || maxAmountInr <= 0) throw new Error('Invalid INR cap: must be greater than 0');
     
     const exercisePrice = parseFloat(await getUserInput('Enter exercise price per unit (USD): '));
     if (isNaN(exercisePrice) || exercisePrice < 0) throw new Error('Invalid exercise price');
@@ -218,8 +218,8 @@ async function startCalculator() {
     const usdToInrRate = usdToInrRateInput ? parseFloat(usdToInrRateInput) : DEFAULT_USD_TO_INR_RATE;
     if (isNaN(usdToInrRate) || usdToInrRate <= 0) throw new Error('Invalid USD to INR rate');
     
-    // Calculate maximum sellable value
-    const maxSellableValueInr = SELLING_CAPS.MAX_AMOUNT_INR;
+    // Display maximum sellable value
+    const maxSellableValueInr = maxAmountInr;
     const maxSellableValueUsd = maxSellableValueInr / usdToInrRate;
     console.log(`\nMaximum sellable value is ${formatCurrency(maxSellableValueInr)} (${formatUSD(maxSellableValueUsd)})`);
     
@@ -229,7 +229,7 @@ async function startCalculator() {
       exercisePrice, 
       buybackPrice,
       percentSellable,
-      isCurrentEmployee,
+      maxAmountInr,
       usdToInrRate
     );
     
@@ -248,7 +248,7 @@ async function startCalculator() {
       buybackPrice, 
       isLongTerm,
       percentSellable,
-      isCurrentEmployee,
+      maxAmountInr,
       usdToInrRate
     );
     
