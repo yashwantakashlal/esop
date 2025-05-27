@@ -4,171 +4,496 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ESOP Buyback Benefit Calculator (India)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-light: #e9efff;
+            --secondary-color: #48cae4;
+            --accent-color: #3a0ca3;
+            --success-color: #06d6a0;
+            --warning-color: #ffd166;
+            --danger-color: #ef476f;
+            --gray-dark: #2b2d42;
+            --gray-medium: #8d99ae;
+            --gray-light: #edf2f4;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: var(--gray-dark);
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f5f5f5;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
         }
+        
         h1, h2, h3 {
-            color: #2c3e50;
+            color: var(--gray-dark);
+            margin-bottom: 1rem;
+            font-weight: 600;
         }
+        
         .header {
             text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background-color: #3498db;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
             color: white;
-            border-radius: 10px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
         }
+        
+        .header h1 {
+            color: white;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
         .container {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 1.5rem;
         }
+        
         .input-section {
             flex: 1;
             min-width: 300px;
             background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
+        
+        .input-section:hover {
+            transform: translateY(-5px);
+        }
+        
+        .input-section::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background-color: var(--primary-color);
+        }
+        
         .results-section {
             flex: 2;
             min-width: 500px;
             background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
         }
+        
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 1.2rem;
+            position: relative;
         }
+        
         label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--gray-dark);
+            font-size: 0.95rem;
         }
+        
         input[type="number"] {
             width: 100%;
-            padding: 8px;
+            padding: 12px 15px;
+            font-size: 1rem;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: var(--border-radius);
+            transition: border 0.3s, box-shadow 0.3s;
+            background-color: #fff;
+            color: var(--gray-dark);
         }
+        
+        input[type="number"]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        }
+        
+        .input-with-icon {
+            position: relative;
+        }
+        
+        .input-with-icon input {
+            padding-left: 40px;
+        }
+        
+        .input-icon {
+            position: absolute;
+            top: 50%;
+            left: 12px;
+            transform: translateY(-50%);
+            color: var(--gray-medium);
+        }
+        
         .radio-group {
             display: flex;
-            gap: 15px;
+            gap: 1.2rem;
+            padding: 0.5rem 0;
+            flex-wrap: wrap;
         }
+        
+        .radio-option {
+            position: relative;
+            flex-grow: 1;
+            min-width: 150px;
+        }
+        
+        .radio-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .radio-label {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .radio-label:before {
+            content: '';
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid var(--gray-medium);
+            margin-right: 10px;
+            transition: all 0.3s;
+        }
+        
+        input[type="radio"]:checked + .radio-label {
+            border-color: var(--primary-color);
+            background-color: var(--primary-light);
+        }
+        
+        input[type="radio"]:checked + .radio-label:before {
+            border-color: var(--primary-color);
+            background-color: var(--primary-color);
+            box-shadow: inset 0 0 0 4px white;
+        }
+        
         button {
-            background-color: #3498db;
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
             cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 0.5rem;
         }
+        
         button:hover {
-            background-color: #2980b9;
+            background-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
         .result-card {
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 8px;
-            border-left: 5px solid #3498db;
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary-color);
+            transition: transform 0.3s;
         }
+        
+        .result-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+        
         .result-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #2c3e50;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+        
         .result-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 5px;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #eee;
         }
+        
+        .result-row:last-child {
+            border-bottom: none;
+        }
+        
         .comparison-section {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #e8f4fc;
-            border-radius: 8px;
-            border-left: 5px solid #2ecc71;
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background-color: var(--primary-light);
+            border-radius: var(--border-radius);
+            border-left: 5px solid var(--success-color);
+            animation: fadeIn 0.5s ease-in;
         }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
         .recommendation {
-            font-weight: bold;
-            color: #2ecc71;
-            padding: 10px;
-            background-color: #f0fff0;
-            border-radius: 5px;
+            font-weight: 600;
+            color: var(--success-color);
+            padding: 1rem;
+            background-color: #f0fff7;
+            border-radius: var(--border-radius);
             text-align: center;
-            margin-top: 15px;
+            margin-top: 1rem;
+            border: 1px dashed var(--success-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
+        
         footer {
             text-align: center;
-            margin-top: 30px;
-            padding: 15px;
-            color: #7f8c8d;
-            font-size: 14px;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            color: var(--gray-medium);
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
         }
+        
         .highlight {
-            font-weight: bold;
-            color: #e74c3c;
+            font-weight: 600;
+            color: var(--primary-color);
         }
+        
         .tax-note {
-            font-size: 14px;
-            color: #7f8c8d;
+            font-size: 0.9rem;
+            color: var(--gray-medium);
             background-color: #f9f9f9;
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 20px;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-top: 1.5rem;
+            border-left: 3px solid var(--gray-medium);
         }
+        
         .currency-note {
-            background-color: #fff3cd;
+            background-color: var(--warning-color);
             color: #856404;
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 10px;
-            font-size: 14px;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin: 1rem 0;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
+        
         .dual-currency {
-            color: #2980b9;
+            color: var(--primary-color);
+            font-weight: 500;
         }
+        
         .caps-info {
-            background-color: #ffe6e6;
-            color: #d35656;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
+            background-color: #feeced;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 5px solid var(--danger-color);
         }
+        
         .caps-info h3 {
             margin-top: 0;
-            color: #d35656;
+            color: var(--danger-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+        
         .caps-info ul {
-            margin: 10px 0;
-            padding-left: 20px;
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+            list-style-type: none;
         }
+        
         .caps-info li {
-            margin-bottom: 5px;
+            margin-bottom: 0.5rem;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+        
+        .caps-info li:before {
+            content: "•";
+            color: var(--danger-color);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        /* Card animations */
+        .result-card {
+            animation: slideIn 0.5s forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .loading {
+            display: none;
+            margin: 2rem auto;
+            text-align: center;
+            color: var(--primary-color);
+        }
+        
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Tooltip styles */
+        .tooltip {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            cursor: help;
+            margin-left: 5px;
+        }
+        
+        .tooltip-icon {
+            color: var(--gray-medium);
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+        
+        .tooltip:hover .tooltip-icon {
+            color: var(--primary-color);
+        }
+        
+        .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--gray-dark);
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-weight: normal;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--gray-dark) transparent transparent transparent;
+        }
+        
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .input-section, .results-section {
+                min-width: 100%;
+            }
+            
+            .radio-group {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+            
+            .radio-option {
+                min-width: 100%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>ESOP Buyback Benefit Calculator</h1>
+        <h1><i class="fas fa-chart-line"></i> ESOP Buyback Benefit Calculator</h1>
         <p>Calculate your financial benefits from ESOP buybacks with Indian tax implications</p>
     </div>
 
     <div class="caps-info">
-        <h3>Selling Caps</h3>
+        <h3><i class="fas fa-exclamation-triangle"></i> Selling Caps</h3>
         <ul>
             <li>Maximum value: ₹1,00,00,000 (1 crore INR)</li>
             <li>Current employees: Maximum 25% of total units</li>
@@ -179,80 +504,137 @@
 
     <div class="container">
         <div class="input-section">
-            <h2>Enter Your ESOP Details</h2>
+            <h2><i class="fas fa-calculator"></i> Enter Your ESOP Details</h2>
             <div class="currency-note">
-                <strong>Note:</strong> Enter all prices in USD. Results will be shown in INR based on the conversion rate.
+                <i class="fas fa-info-circle"></i>
+                <span><strong>Note:</strong> Enter all prices in USD. Results will be shown in INR based on the conversion rate.</span>
             </div>
             <form id="esopForm">
                 <div class="form-group">
-                    <label for="units">Number of Vested ESOP Units:</label>
-                    <input type="number" id="units" min="1" required>
+                    <label for="units">Number of Vested ESOP Units 
+                        <span class="tooltip">
+                            <i class="fas fa-question-circle tooltip-icon"></i>
+                            <span class="tooltip-text">The total number of ESOP units you have vested so far.</span>
+                        </span>
+                    </label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-hashtag input-icon"></i>
+                        <input type="number" id="units" min="1" required placeholder="Enter number of units">
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Employment Status:</label>
+                    <label>Employment Status 
+                        <span class="tooltip">
+                            <i class="fas fa-question-circle tooltip-icon"></i>
+                            <span class="tooltip-text">Your current status affects the maximum percentage of ESOPs you can sell.</span>
+                        </span>
+                    </label>
                     <div class="radio-group">
-                        <div>
+                        <div class="radio-option">
                             <input type="radio" id="currentEmployee" name="employmentStatus" value="current" checked>
-                            <label for="currentEmployee">Current Employee (25% limit)</label>
+                            <label for="currentEmployee" class="radio-label">Current Employee (25% limit)</label>
                         </div>
-                        <div>
+                        <div class="radio-option">
                             <input type="radio" id="exEmployee" name="employmentStatus" value="ex">
-                            <label for="exEmployee">Ex-Employee (12.5% limit)</label>
+                            <label for="exEmployee" class="radio-label">Ex-Employee (12.5% limit)</label>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="exercisePrice">Exercise Price per Unit (USD):</label>
-                    <input type="number" id="exercisePrice" min="0" step="0.01" required>
+                    <label for="exercisePrice">Exercise Price per Unit 
+                        <span class="tooltip">
+                            <i class="fas fa-question-circle tooltip-icon"></i>
+                            <span class="tooltip-text">The price at which you can purchase one ESOP unit.</span>
+                        </span>
+                    </label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-dollar-sign input-icon"></i>
+                        <input type="number" id="exercisePrice" min="0" step="0.01" required placeholder="Enter price in USD">
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="buybackPrice">Buyback Price per Unit (USD):</label>
-                    <input type="number" id="buybackPrice" min="0" step="0.01" required>
+                    <label for="buybackPrice">Buyback Price per Unit 
+                        <span class="tooltip">
+                            <i class="fas fa-question-circle tooltip-icon"></i>
+                            <span class="tooltip-text">The price at which the company will buy back one ESOP unit from you.</span>
+                        </span>
+                    </label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-dollar-sign input-icon"></i>
+                        <input type="number" id="buybackPrice" min="0" step="0.01" required placeholder="Enter price in USD">
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="fairMarketValue">Fair Market Value at Time of Exercise (USD):</label>
-                    <input type="number" id="fairMarketValue" min="0" step="0.01" required>
+                    <label for="fairMarketValue">Fair Market Value at Time of Exercise 
+                        <span class="tooltip">
+                            <i class="fas fa-question-circle tooltip-icon"></i>
+                            <span class="tooltip-text">The fair market value of one ESOP unit at the time you exercised your options.</span>
+                        </span>
+                    </label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-dollar-sign input-icon"></i>
+                        <input type="number" id="fairMarketValue" min="0" step="0.01" required placeholder="Enter value in USD">
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label for="usdToInrRate">USD to INR Conversion Rate:</label>
-                    <input type="number" id="usdToInrRate" min="1" step="0.01" value="83.50" required>
+                    <label for="usdToInrRate">USD to INR Conversion Rate 
+                        <span class="tooltip">
+                            <i class="fas fa-question-circle tooltip-icon"></i>
+                            <span class="tooltip-text">The exchange rate used to convert USD to INR.</span>
+                        </span>
+                    </label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-exchange-alt input-icon"></i>
+                        <input type="number" id="usdToInrRate" min="1" step="0.01" value="83.50" required placeholder="Enter conversion rate">
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Holding Period after Exercise:</label>
+                    <label>Holding Period after Exercise 
+                        <span class="tooltip">
+                            <i class="fas fa-question-circle tooltip-icon"></i>
+                            <span class="tooltip-text">The time period you have held the exercised ESOPs affects your capital gains tax rate.</span>
+                        </span>
+                    </label>
                     <div class="radio-group">
-                        <div>
+                        <div class="radio-option">
                             <input type="radio" id="shortTerm" name="holdingPeriod" value="short" checked>
-                            <label for="shortTerm">Less than 24 months</label>
+                            <label for="shortTerm" class="radio-label">Less than 24 months</label>
                         </div>
-                        <div>
+                        <div class="radio-option">
                             <input type="radio" id="longTerm" name="holdingPeriod" value="long">
-                            <label for="longTerm">More than 24 months</label>
+                            <label for="longTerm" class="radio-label">More than 24 months</label>
                         </div>
                     </div>
                 </div>
 
-                <button type="submit">Calculate Benefits</button>
+                <button type="submit"><i class="fas fa-calculator"></i> Calculate Benefits</button>
             </form>
 
             <div class="tax-note">
-                <p><strong>Note on Tax Calculations:</strong> This calculator uses standard tax rates applicable for FY 2025-26 in India, including 30% perquisite tax, surcharge, and education cess. Actual tax liability may vary based on individual income slabs and other factors.</p>
+                <p><i class="fas fa-exclamation-circle"></i> <strong>Note on Tax Calculations:</strong> This calculator uses standard tax rates applicable for FY 2025-26 in India, including 30% perquisite tax, surcharge, and education cess. Actual tax liability may vary based on individual income slabs and other factors.</p>
             </div>
         </div>
 
         <div class="results-section" id="results">
-            <h2>Results</h2>
+            <h2><i class="fas fa-chart-bar"></i> Results</h2>
             <p>Fill in the form and click "Calculate Benefits" to see your potential ESOP buyback benefits.</p>
+            
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>Calculating your benefits...</p>
+            </div>
         </div>
     </div>
 
     <footer>
         <p>Disclaimer: This calculator is for informational purposes only and should not be considered as tax or financial advice. Please consult with a tax professional for your specific situation.</p>
+        <p><i class="fas fa-calendar-alt"></i> Last updated: May 2025</p>
     </footer>
 
     <script>
@@ -509,13 +891,13 @@
         }
 
         // Create result card
-        function createResultCard(title, data) {
+        function createResultCard(title, data, icon) {
             const card = document.createElement('div');
             card.className = 'result-card';
             
             const titleElement = document.createElement('div');
             titleElement.className = 'result-title';
-            titleElement.textContent = title;
+            titleElement.innerHTML = `<i class="fas ${icon}"></i> ${title}`;
             card.appendChild(titleElement);
             
             for (const [key, value] of Object.entries(data)) {
@@ -539,106 +921,125 @@
         // Display results
         function displayResults(exercisedAlreadyScenario, notExercisedYetScenario, comparison) {
             const resultsSection = document.getElementById('results');
-            resultsSection.innerHTML = '<h2>Results</h2>';
+            resultsSection.innerHTML = '<h2><i class="fas fa-chart-bar"></i> Results</h2>';
             
-            // Exercised Already scenario results
-            const exercisedAlreadyResults = {
-                'Employment Status': exercisedAlreadyScenario.isCurrentEmployee ? 'Current Employee' : 'Ex-Employee',
-                'Units': exercisedAlreadyScenario.units,
-                'Requested Percentage Sellable': exercisedAlreadyScenario.percentSellable.toFixed(2) + '%',
-                'Actual Percentage Sellable': exercisedAlreadyScenario.actualPercentageSold.toFixed(2) + '%',
-                'Sellable Units': `${exercisedAlreadyScenario.sellableUnits} of ${exercisedAlreadyScenario.units} (${exercisedAlreadyScenario.nonSellableUnits} non-sellable)`,
-                'Limiting Factor': exercisedAlreadyScenario.limitingFactor,
-                'Exercise Price': formatDualCurrency(exercisedAlreadyScenario.exercisePriceUsd, exercisedAlreadyScenario.exercisePrice),
-                'FMV at Exercise': formatDualCurrency(exercisedAlreadyScenario.fairMarketValueUsd, exercisedAlreadyScenario.fairMarketValue),
-                'Buyback Price': formatDualCurrency(exercisedAlreadyScenario.buybackPriceUsd, exercisedAlreadyScenario.buybackPrice),
-                'USD to INR Rate': exercisedAlreadyScenario.usdToInrRate,
-                'Capital Gains Type': exercisedAlreadyScenario.isLongTerm ? 'Long Term (>24 months)' : 'Short Term (<24 months)',
-                'Exercise Cost': formatCurrency(exercisedAlreadyScenario.exerciseCost),
-                'Perquisite Value': formatCurrency(exercisedAlreadyScenario.perquisiteValue),
-                'Perquisite Tax': formatCurrency(exercisedAlreadyScenario.perquisiteTax),
-                'Total Acquisition Cost': formatCurrency(exercisedAlreadyScenario.totalAcquisitionCost),
-                'Buyback Amount (sellable)': formatCurrency(exercisedAlreadyScenario.buybackAmount),
-                'Capital Gains': formatCurrency(exercisedAlreadyScenario.capitalGains),
-                'Capital Gains Tax': formatCurrency(exercisedAlreadyScenario.capitalGainsTax),
-                'Net Proceeds': formatCurrency(exercisedAlreadyScenario.netProceeds),
-                'Total Profit (sellable)': formatCurrency(exercisedAlreadyScenario.totalProfit),
-                'Total Tax Paid': formatCurrency(exercisedAlreadyScenario.taxPaid),
-                'Effective Tax Rate': ((exercisedAlreadyScenario.taxPaid / exercisedAlreadyScenario.buybackAmount) * 100).toFixed(2) + '%',
-                'Value of Non-Sellable Units': formatCurrency(exercisedAlreadyScenario.remainingValue)
-            };
+            // Show loading animation
+            const loading = document.createElement('div');
+            loading.className = 'loading';
+            loading.style.display = 'block';
+            loading.innerHTML = `
+                <div class="loading-spinner"></div>
+                <p>Calculating your benefits...</p>
+            `;
+            resultsSection.appendChild(loading);
             
-            // Not Exercised Yet scenario results
-            const notExercisedYetResults = {
-                'Employment Status': notExercisedYetScenario.isCurrentEmployee ? 'Current Employee' : 'Ex-Employee',
-                'Units': notExercisedYetScenario.units,
-                'Requested Percentage Sellable': notExercisedYetScenario.percentSellable.toFixed(2) + '%',
-                'Actual Percentage Sellable': notExercisedYetScenario.actualPercentageSold.toFixed(2) + '%',
-                'Sellable Units': `${notExercisedYetScenario.sellableUnits} of ${notExercisedYetScenario.units} (${notExercisedYetScenario.nonSellableUnits} non-sellable)`,
-                'Limiting Factor': notExercisedYetScenario.limitingFactor,
-                'Exercise Price (not paid)': formatDualCurrency(notExercisedYetScenario.exercisePriceUsd, notExercisedYetScenario.exercisePrice),
-                'Buyback Price': formatDualCurrency(notExercisedYetScenario.buybackPriceUsd, notExercisedYetScenario.buybackPrice),
-                'USD to INR Rate': notExercisedYetScenario.usdToInrRate,
-                'Notional Exercise Cost (saved)': formatCurrency(notExercisedYetScenario.notionalExerciseCost),
-                'Buyback Amount (sellable)': formatCurrency(notExercisedYetScenario.buybackAmount),
-                'Perquisite Value': formatCurrency(notExercisedYetScenario.perquisiteValue),
-                'Perquisite Tax': formatCurrency(notExercisedYetScenario.perquisiteTax),
-                'Net Proceeds': formatCurrency(notExercisedYetScenario.netProceeds),
-                'Net Profit (sellable)': formatCurrency(notExercisedYetScenario.netProfit),
-                'Total Tax Paid': formatCurrency(notExercisedYetScenario.taxPaid),
-                'Effective Tax Rate': ((notExercisedYetScenario.taxPaid / notExercisedYetScenario.buybackAmount) * 100).toFixed(2) + '%',
-                'Value of Non-Sellable Units': formatCurrency(notExercisedYetScenario.nonSellableValue)
-            };
-            
-            // Comparison results
-            const comparisonResults = {
-                'Profit in "Exercised Already" Scenario': formatCurrency(comparison.exercisedAlreadyScenario.totalProfit),
-                'Profit in "Not Exercised Yet" Scenario': formatCurrency(comparison.notExercisedYetScenario.netProfit),
-                'Profit Difference': formatCurrency(comparison.profitDifference),
-                'Tax in "Exercised Already" Scenario': formatCurrency(comparison.exercisedAlreadyScenario.taxPaid),
-                'Tax in "Not Exercised Yet" Scenario': formatCurrency(comparison.notExercisedYetScenario.taxPaid),
-                'Tax Difference': formatCurrency(comparison.taxDifference)
-            };
-            
-            // Create and append result cards
-            const exercisedAlreadyCard = createResultCard('Scenario 1: ESOPs Already Exercised', exercisedAlreadyResults);
-            const notExercisedYetCard = createResultCard('Scenario 2: ESOPs Not Exercised Yet', notExercisedYetResults);
-            
-            resultsSection.appendChild(exercisedAlreadyCard);
-            resultsSection.appendChild(notExercisedYetCard);
-            
-            // Create comparison section
-            const comparisonSection = document.createElement('div');
-            comparisonSection.className = 'comparison-section';
-            
-            const comparisonTitle = document.createElement('div');
-            comparisonTitle.className = 'result-title';
-            comparisonTitle.textContent = 'Comparison Between Scenarios';
-            comparisonSection.appendChild(comparisonTitle);
-            
-            // Add comparison rows
-            for (const [key, value] of Object.entries(comparisonResults)) {
-                const row = document.createElement('div');
-                row.className = 'result-row';
+            // Simulate calculation time for better UX
+            setTimeout(() => {
+                loading.style.display = 'none';
                 
-                const keyElement = document.createElement('div');
-                keyElement.textContent = key;
-                row.appendChild(keyElement);
+                // Exercised Already scenario results
+                const exercisedAlreadyResults = {
+                    'Employment Status': exercisedAlreadyScenario.isCurrentEmployee ? 'Current Employee' : 'Ex-Employee',
+                    'Units': exercisedAlreadyScenario.units,
+                    'Requested Percentage Sellable': exercisedAlreadyScenario.percentSellable.toFixed(2) + '%',
+                    'Actual Percentage Sellable': exercisedAlreadyScenario.actualPercentageSold.toFixed(2) + '%',
+                    'Sellable Units': `${exercisedAlreadyScenario.sellableUnits} of ${exercisedAlreadyScenario.units} (${exercisedAlreadyScenario.nonSellableUnits} non-sellable)`,
+                    'Limiting Factor': exercisedAlreadyScenario.limitingFactor,
+                    'Exercise Price': formatDualCurrency(exercisedAlreadyScenario.exercisePriceUsd, exercisedAlreadyScenario.exercisePrice),
+                    'FMV at Exercise': formatDualCurrency(exercisedAlreadyScenario.fairMarketValueUsd, exercisedAlreadyScenario.fairMarketValue),
+                    'Buyback Price': formatDualCurrency(exercisedAlreadyScenario.buybackPriceUsd, exercisedAlreadyScenario.buybackPrice),
+                    'USD to INR Rate': exercisedAlreadyScenario.usdToInrRate,
+                    'Capital Gains Type': exercisedAlreadyScenario.isLongTerm ? 'Long Term (>24 months)' : 'Short Term (<24 months)',
+                    'Exercise Cost': formatCurrency(exercisedAlreadyScenario.exerciseCost),
+                    'Perquisite Value': formatCurrency(exercisedAlreadyScenario.perquisiteValue),
+                    'Perquisite Tax': formatCurrency(exercisedAlreadyScenario.perquisiteTax),
+                    'Total Acquisition Cost': formatCurrency(exercisedAlreadyScenario.totalAcquisitionCost),
+                    'Buyback Amount (sellable)': formatCurrency(exercisedAlreadyScenario.buybackAmount),
+                    'Capital Gains': formatCurrency(exercisedAlreadyScenario.capitalGains),
+                    'Capital Gains Tax': formatCurrency(exercisedAlreadyScenario.capitalGainsTax),
+                    'Net Proceeds': formatCurrency(exercisedAlreadyScenario.netProceeds),
+                    'Total Profit (sellable)': formatCurrency(exercisedAlreadyScenario.totalProfit),
+                    'Total Tax Paid': formatCurrency(exercisedAlreadyScenario.taxPaid),
+                    'Effective Tax Rate': ((exercisedAlreadyScenario.taxPaid / exercisedAlreadyScenario.buybackAmount) * 100).toFixed(2) + '%',
+                    'Value of Non-Sellable Units': formatCurrency(exercisedAlreadyScenario.remainingValue)
+                };
                 
-                const valueElement = document.createElement('div');
-                valueElement.innerHTML = value;
-                row.appendChild(valueElement);
+                // Not Exercised Yet scenario results
+                const notExercisedYetResults = {
+                    'Employment Status': notExercisedYetScenario.isCurrentEmployee ? 'Current Employee' : 'Ex-Employee',
+                    'Units': notExercisedYetScenario.units,
+                    'Requested Percentage Sellable': notExercisedYetScenario.percentSellable.toFixed(2) + '%',
+                    'Actual Percentage Sellable': notExercisedYetScenario.actualPercentageSold.toFixed(2) + '%',
+                    'Sellable Units': `${notExercisedYetScenario.sellableUnits} of ${notExercisedYetScenario.units} (${notExercisedYetScenario.nonSellableUnits} non-sellable)`,
+                    'Limiting Factor': notExercisedYetScenario.limitingFactor,
+                    'Exercise Price (not paid)': formatDualCurrency(notExercisedYetScenario.exercisePriceUsd, notExercisedYetScenario.exercisePrice),
+                    'Buyback Price': formatDualCurrency(notExercisedYetScenario.buybackPriceUsd, notExercisedYetScenario.buybackPrice),
+                    'USD to INR Rate': notExercisedYetScenario.usdToInrRate,
+                    'Notional Exercise Cost (saved)': formatCurrency(notExercisedYetScenario.notionalExerciseCost),
+                    'Buyback Amount (sellable)': formatCurrency(notExercisedYetScenario.buybackAmount),
+                    'Perquisite Value': formatCurrency(notExercisedYetScenario.perquisiteValue),
+                    'Perquisite Tax': formatCurrency(notExercisedYetScenario.perquisiteTax),
+                    'Net Proceeds': formatCurrency(notExercisedYetScenario.netProceeds),
+                    'Net Profit (sellable)': formatCurrency(notExercisedYetScenario.netProfit),
+                    'Total Tax Paid': formatCurrency(notExercisedYetScenario.taxPaid),
+                    'Effective Tax Rate': ((notExercisedYetScenario.taxPaid / notExercisedYetScenario.buybackAmount) * 100).toFixed(2) + '%',
+                    'Value of Non-Sellable Units': formatCurrency(notExercisedYetScenario.nonSellableValue)
+                };
                 
-                comparisonSection.appendChild(row);
-            }
-            
-            // Add recommendation
-            const recommendation = document.createElement('div');
-            recommendation.className = 'recommendation';
-            recommendation.textContent = comparison.recommendation;
-            comparisonSection.appendChild(recommendation);
-            
-            resultsSection.appendChild(comparisonSection);
+                // Comparison results
+                const comparisonResults = {
+                    'Profit in "Exercised Already" Scenario': formatCurrency(comparison.exercisedAlreadyScenario.totalProfit),
+                    'Profit in "Not Exercised Yet" Scenario': formatCurrency(comparison.notExercisedYetScenario.netProfit),
+                    'Profit Difference': formatCurrency(comparison.profitDifference),
+                    'Tax in "Exercised Already" Scenario': formatCurrency(comparison.exercisedAlreadyScenario.taxPaid),
+                    'Tax in "Not Exercised Yet" Scenario': formatCurrency(comparison.notExercisedYetScenario.taxPaid),
+                    'Tax Difference': formatCurrency(comparison.taxDifference)
+                };
+                
+                // Create and append result cards with staggered animation delay
+                const exercisedAlreadyCard = createResultCard('Scenario 1: ESOPs Already Exercised', exercisedAlreadyResults, 'fa-check-circle');
+                exercisedAlreadyCard.style.animationDelay = '0s';
+                
+                const notExercisedYetCard = createResultCard('Scenario 2: ESOPs Not Exercised Yet', notExercisedYetResults, 'fa-hourglass-half');
+                notExercisedYetCard.style.animationDelay = '0.2s';
+                
+                resultsSection.appendChild(exercisedAlreadyCard);
+                resultsSection.appendChild(notExercisedYetCard);
+                
+                // Create comparison section
+                const comparisonSection = document.createElement('div');
+                comparisonSection.className = 'comparison-section';
+                
+                const comparisonTitle = document.createElement('div');
+                comparisonTitle.className = 'result-title';
+                comparisonTitle.innerHTML = '<i class="fas fa-balance-scale"></i> Comparison Between Scenarios';
+                comparisonSection.appendChild(comparisonTitle);
+                
+                // Add comparison rows
+                for (const [key, value] of Object.entries(comparisonResults)) {
+                    const row = document.createElement('div');
+                    row.className = 'result-row';
+                    
+                    const keyElement = document.createElement('div');
+                    keyElement.textContent = key;
+                    row.appendChild(keyElement);
+                    
+                    const valueElement = document.createElement('div');
+                    valueElement.innerHTML = value;
+                    row.appendChild(valueElement);
+                    
+                    comparisonSection.appendChild(row);
+                }
+                
+                // Add recommendation
+                const recommendation = document.createElement('div');
+                recommendation.className = 'recommendation';
+                const recommendIcon = comparison.profitDifference > 0 ? 'fa-thumbs-up' : 'fa-lightbulb';
+                recommendation.innerHTML = `<i class="fas ${recommendIcon}"></i> ${comparison.recommendation}`;
+                comparisonSection.appendChild(recommendation);
+                
+                resultsSection.appendChild(comparisonSection);
+            }, 800);
         }
 
         // Form submission handler
@@ -654,135 +1055,38 @@
             const usdToInrRate = parseFloat(document.getElementById('usdToInrRate').value);
             const holdingPeriod = document.querySelector('input[name="holdingPeriod"]:checked').value;
             
-            // Calculate maximum percentage based on employment status
-            const maxPercentage = employmentStatus === 'current' ? 25 : 12.5;
+            const isCurrentEmployee = employmentStatus === 'current';
+            const isLongTerm = holdingPeriod === 'long';
             
-            // Calculate eligible units based on percentage cap
-            const eligibleUnits = Math.min(units * (maxPercentage / 100), units);
+            // Calculate scenarios
+            const exercisedAlreadyScenario = calculateBenefitsWhenExercisedAlready(
+                units,
+                exercisePrice,
+                fairMarketValue,
+                buybackPrice,
+                isLongTerm,
+                100, // Percent sellable - starts at 100% and gets adjusted by constraints
+                isCurrentEmployee,
+                usdToInrRate
+            );
             
-            // Calculate values
-            const totalExercisePrice = exercisePrice * eligibleUnits;
-            const totalBuybackPrice = buybackPrice * eligibleUnits;
-            const totalFairMarketValue = fairMarketValue * eligibleUnits;
+            const notExercisedYetScenario = calculateBenefitsWhenNotExercisedYet(
+                units,
+                exercisePrice,
+                buybackPrice,
+                100, // Percent sellable - starts at 100% and gets adjusted by constraints
+                isCurrentEmployee,
+                usdToInrRate
+            );
             
-            // Calculate perquisite tax
-            const perquisiteTaxIncome = Math.max(0, (fairMarketValue - exercisePrice) * eligibleUnits);
-            const perquisiteTax = perquisiteTaxIncome * 0.3; // 30% perquisite tax
-            const perquisiteTaxCess = perquisiteTax * 0.04; // 4% cess
-            const totalPerquisiteTax = perquisiteTax + perquisiteTaxCess;
+            // Compare scenarios
+            const comparison = compareScenarios(exercisedAlreadyScenario, notExercisedYetScenario);
             
-            // Calculate capital gains
-            const capitalGains = (buybackPrice - fairMarketValue) * eligibleUnits;
-            let capitalGainsTaxRate = 0.3; // Default to short-term rate (30%)
+            // Display results
+            displayResults(exercisedAlreadyScenario, notExercisedYetScenario, comparison);
             
-            if (holdingPeriod === 'long') {
-                capitalGainsTaxRate = 0.2; // Long-term capital gains tax (20%)
-            }
-            
-            const capitalGainsTax = Math.max(0, capitalGains * capitalGainsTaxRate);
-            const capitalGainsTaxCess = capitalGainsTax * 0.04; // 4% cess
-            const totalCapitalGainsTax = capitalGainsTax + capitalGainsTaxCess;
-            
-            // Calculate net proceeds
-            const grossProceeds = totalBuybackPrice;
-            const totalTaxes = totalPerquisiteTax + totalCapitalGainsTax;
-            const netProceeds = grossProceeds - totalTaxes;
-            
-            // Convert to INR
-            const grossProceedsINR = grossProceeds * usdToInrRate;
-            const totalTaxesINR = totalTaxes * usdToInrRate;
-            const netProceedsINR = netProceeds * usdToInrRate;
-            
-            // Cap check - 1 crore INR limit
-            const croreCapINR = 10000000; // 1 crore in INR
-            const isCapped = netProceedsINR > croreCapINR;
-            const finalNetProceedsINR = isCapped ? croreCapINR : netProceedsINR;
-            
-            // Format currency
-            const formatUSD = (amount) => {
-                return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
-            };
-            
-            const formatINR = (amount) => {
-                return new Intl.NumberFormat('en-IN', { 
-                    style: 'currency', 
-                    currency: 'INR',
-                    maximumFractionDigits: 0 
-                }).format(amount);
-            };
-            
-            // Generate results
-            const resultsHTML = `
-                <h2>Your ESOP Benefits</h2>
-                <div class="results-card">
-                    <h3>Summary</h3>
-                    <div class="summary-row">
-                        <span>Total ESOP Units:</span>
-                        <span>${units.toLocaleString()}</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Maximum Percentage Allowed:</span>
-                        <span>${maxPercentage.toFixed(1)}%</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Eligible Units for Sale:</span>
-                        <span>${Math.floor(eligibleUnits).toLocaleString()}</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Gross Proceeds:</span>
-                        <span>${formatUSD(grossProceeds)} / ${formatINR(grossProceedsINR)}</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Total Tax:</span>
-                        <span>${formatUSD(totalTaxes)} / ${formatINR(totalTaxesINR)}</span>
-                    </div>
-                    <div class="summary-row highlight">
-                        <span>Net Proceeds${isCapped ? ' (Capped at ₹1 Crore)' : ''}:</span>
-                        <span>${formatUSD(isCapped ? finalNetProceedsINR/usdToInrRate : netProceeds)} / ${formatINR(finalNetProceedsINR)}</span>
-                    </div>
-                </div>
-                
-                <div class="results-card">
-                    <h3>Tax Breakdown</h3>
-                    <h4>Perquisite Tax (At time of exercise)</h4>
-                    <div class="tax-row">
-                        <span>Perquisite Value:</span>
-                        <span>${formatUSD(perquisiteTaxIncome)} / ${formatINR(perquisiteTaxIncome * usdToInrRate)}</span>
-                    </div>
-                    <div class="tax-row">
-                        <span>Perquisite Tax (30%):</span>
-                        <span>${formatUSD(perquisiteTax)} / ${formatINR(perquisiteTax * usdToInrRate)}</span>
-                    </div>
-                    <div class="tax-row">
-                        <span>Education Cess (4%):</span>
-                        <span>${formatUSD(perquisiteTaxCess)} / ${formatINR(perquisiteTaxCess * usdToInrRate)}</span>
-                    </div>
-                    <div class="tax-row highlight">
-                        <span>Total Perquisite Tax:</span>
-                        <span>${formatUSD(totalPerquisiteTax)} / ${formatINR(totalPerquisiteTax * usdToInrRate)}</span>
-                    </div>
-                    
-                    <h4>Capital Gains Tax (At time of buyback)</h4>
-                    <div class="tax-row">
-                        <span>Capital Gains:</span>
-                        <span>${formatUSD(capitalGains)} / ${formatINR(capitalGains * usdToInrRate)}</span>
-                    </div>
-                    <div class="tax-row">
-                        <span>Capital Gains Tax (${holdingPeriod === 'long' ? '20%' : '30%'}):</span>
-                        <span>${formatUSD(capitalGainsTax)} / ${formatINR(capitalGainsTax * usdToInrRate)}</span>
-                    </div>
-                    <div class="tax-row">
-                        <span>Education Cess (4%):</span>
-                        <span>${formatUSD(capitalGainsTaxCess)} / ${formatINR(capitalGainsTaxCess * usdToInrRate)}</span>
-                    </div>
-                    <div class="tax-row highlight">
-                        <span>Total Capital Gains Tax:</span>
-                        <span>${formatUSD(totalCapitalGainsTax)} / ${formatINR(totalCapitalGainsTax * usdToInrRate)}</span>
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('results').innerHTML = resultsHTML;
+            // Scroll to results
+            document.querySelector('.results-section').scrollIntoView({ behavior: 'smooth' });
         });
     </script>
 </body>
